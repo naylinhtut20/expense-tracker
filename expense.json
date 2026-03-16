@@ -1,0 +1,26 @@
+[
+    {
+        "amount": 1000.0,
+        "category": "Pc",
+        "description": "laptop",
+        "date": "2022-05-20"
+    },
+    {
+        "amount": 60.0,
+        "category": "food",
+        "description": "kfc",
+        "date": "2024-01-13"
+    },
+    {
+        "amount": 200.0,
+        "category": "rent",
+        "description": "phone",
+        "date": "2024-01-16"
+    },
+    {
+        "amount": 10.0,
+        "category": "food",
+        "description": "ramen",
+        "date": "2025-05-14"
+    }
+]
