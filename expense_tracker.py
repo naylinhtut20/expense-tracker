@@ -3,181 +3,201 @@ import json
 from datetime import datetime
 
 class ExpenseTracker:
-    def __init__(self, file_name):
-        self.file_name =  file_name
+    def __init__(self, data_file_path):
+        self.file_name =  data_file_path
         self.expenses = []
         self.load_expenses()
 
     def load_expenses(self):
-        if not os.path.exists(self.file_name):
-            return []
+        if not os.path.exists(self.data_file_path):
+            self.expenses = []
+            return
 
-        with open(self.file_name, "r") as f:
+        with open(self.data_file_path, "r") as file:
             try:
-                self.expenses = json.load(f)
+                self.expenses = json.load(file)
             except json.JSONDecodeError:
                 self.expenses = []
 
     def sort_expenses_by_date(self):
         self.expenses.sort(
-            key=lambda exp: datetime.strptime(exp["date"], "%Y-%m-%d")
+            key=lambda expense: datetime.strptime(expense["date"], "%Y-%m-%d")
         )
 
     def save_expenses(self):
-        with open(self.file_name, "w") as f:
-            json.dump(self.expenses, f, indent=4)
+        with open(self.file_name, "w") as file:
+            json.dump(self.expenses, file, indent=4)
 
-    def check_is_there_expense(self):
+    def has_expenses(self):
         if not self.expenses:
             print("No expneses found.")
             return False
         return True
 
     def add_expense(self):
-        new_expense_list = {
+        expense_record = {
             "amount": get_amount(),
             "category": get_category(),
             "description": get_description(),
             "date": get_date()
         }
 
-        self.expenses.append(new_expense_list)
+        self.expenses.append(expense_record)
         self.save_expenses()
-        print("Expense added!")
+        print("Expense added successfully!")
 
     def view_expense(self):
         self.sort_expenses_by_date()
 
-        if not self.check_is_there_expense():
+        if not self.has_expenses():
             return
 
-        for i, exp in enumerate(self.expenses, start=1):
-            print(f"{i}. Amount: ${exp['amount']}")
-            print(f"   Category: {exp['category']}")
-            print(f"   Description: {exp['description']}")
-            print(f"   Date: {exp['date']}")
+        for index, expense in enumerate(self.expenses, start=1):
+            print(f"{index}. Amount: ${expense['amount']}")
+            print(f"   Category: {expense['category']}")
+            print(f"   Description: {expense['description']}")
+            print(f"   Date: {expense['date']}")
             print()
 
     def delete_expense(self):
         self.view_expense()
 
-        choice = input("Enter number to delete: ")
-
-        if not choice.isdigit():
-            print("Invalid number")
+        if not self.has_expenses():
             return
 
-        index = int(choice) - 1
+        selection = input("Enter the expense number to delete: ")
 
-        if 0 <= index < len(self.expenses):
-            self.expenses.pop(index)
+        if not selection.isdigit():
+            print("Invalid number.")
+            return
+
+        expense_index = int(selection) - 1
+
+        if 0 <= expense_index < len(self.expenses):
+            self.expenses.pop(expense_index)
             self.save_expenses()
-            print("Deleted!")
+            print("Expense deleted successfully.")
         else:
-            print("Invalid choice")
+            print("Invalid selection.")
 
     def view_total_spending(self):
-        if not self.check_is_there_expense():
+        if not self.has_expenses():
             return
         
-        total = 0
+        total_spending = 0
 
-        for exp in self.expenses:
-            total += float(exp.get("amount", 0))
-        print(f"Total spending: {total}$")
+        for expense in self.expenses:
+            total_spending += float(expense.get("amount", 0))
+
+        print(f"Total spending: ${total_spending}")
 
     def view_spending_by_category(self):
-        if not self.check_is_there_expense():
+        if not self.has_expenses():
             return
         
-        category_total = {}
+        category_totals = {}
 
-        for exp in self.expenses:
-            category = exp['category']
-            amount = float(exp['amount'])
+        for expense in self.expenses:
+            category_name = expense["category"]
+            amount = float(expense["amount"])
 
-            if category in category_total:
-                category_total[category] += amount
+            if category_name in category_totals:
+                category_totals[category_name] += amount
             else:
-                category_total[category] = amount
+                category_totals[category_name] = amount
 
         print("\nSpending by Category:")
-        for cate, total in category_total.items():
-            print(f"{cate}: ${total}")
+        for category_name, total_amount in category_totals.items():
+            print(f"{category_name}: ${total_amount}")
 
     def view_highest_expense(self):
-        self.check_is_there_expense()
+        if not self.has_expenses():
+            return
 
-        highest = max(self.expenses, key=lambda exp: float(exp["amount"]))
+        highest_expense = max(self.expenses, key=lambda expense: float(expense["amount"]))
 
         print("\nHighest Expense: ")
-        print(f"${highest['amount']} - {highest['category']} - {highest['date']}")
+        print(
+            f"${highest_expense['amount']} - {highest_expense['category']} - {self.view_highest_expense['date']}"
+            )
 
     def view_lowest_expense(self):
-        self.check_is_there_expense()
+        if not self.has_expenses():
+            return
 
-        lowest = min(self.expenses, key=lambda exp: float(exp["amount"]))
+        lowest_expense = min(self.expenses, key=lambda expense: float(expense["amount"]))
 
         print("\nLowest Expense:")
-        print(f"${lowest['amount']} - {lowest['category']} - {lowest['date']}")
+
+        print(
+            f"${lowest_expense['amount']} - {lowest_expense['category']} - {lowest_expense['date']}"
+            )
 
     def edit_expense(self):
         self.view_expense()
+
+        if not self.has_expenses():
+            return
         
-        index = int(input("Enter a number: ")) - 1
+        selection = input("Enter the expense number to edit: ")
 
-        if 0 <= index < len(self.expenses):
+        if not selection.isdigit():
+            print("Invalid number.")
+            return
+        
+        expense_index = int(selection) - 1
 
-            new_amount = get_amount()
-            new_category = get_category()
-            new_description = get_description()
-            new_date = get_date()
+        if 0 <= expense_index < len(self.expenses):
 
-            self.expenses[index]["amount"] = new_amount
-            self.expenses[index]["category"] = new_category
-            self.expenses[index]["description"] = new_description
-            self.expenses[index]["date"] = new_date
+            updated_amount = get_amount()
+            updated_category = get_category()
+            updated_description = get_description()
+            updated_date = get_date()
 
-            print("Expense update!")
+            self.expenses[expense_index]["amount"] = updated_amount
+            self.expenses[expense_index]["category"] = updated_category
+            self.expenses[expense_index]["description"] = updated_description
+            self.expenses[expense_index]["date"] = updated_date
+
+            print("Expense updated successfully!")
             self.save_expenses()
-
         else:
             print("Invalid number")
 
     def monthly_spending_summary(self):
-        self.check_is_there_expense()
+        if not self.has_expenses():
+            return
 
-        month = input("Enter month (YYYY-MM): ")
+        target_month = input("Enter month (YYYY-MM): ")
 
-        total =  0
-        categories = {}
+        monthly_total =  0
+        category_totals = {}
 
         for expense in self.expenses:
+            if expense["date"].startswith(target_month):
+                amount = float(expense["amount"])
+                monthly_total += amount
 
-            if expense["date"].startswith(month):
+                category_name = expense["category"]
 
-                total += expense["amount"]
-
-                category = expense["category"]
-
-                if category in categories:
-                    categories[category] += expense["amount"]
+                if category_name in category_totals:
+                    category_totals[category_name] += amount
                 else:
-                    categories[category] = expense["amount"]
+                    category_totals[category_name] = amount
 
-        print(f"\nTotal spending: ${total}")
+        print(f"\nTotal spending: for {target_month}: ${monthly_total}")
 
-        print("\nBy category:")
-        for category, amount in categories.items():
-            print(category, ":", amount)
+        print("\nSpending by category:")
+        for category_name, amount in category_totals.items():
+            print(f"{category_name}: ${amount}")
 
 # ---- amount ----
 def get_amount():
     while True:
-        amount = get_non_empty_input("Enter amount: ")
-        if amount.replace(".", "", 1).isdigit():
-            return float(amount)
-        print("Invalid amount! Please enter a number.")
+        amount_text = get_non_empty_input("Enter amount: ")
+        if amount_text.replace(".", "", 1).isdigit():
+            return float(amount_text)
+        print("Invalid amount. Please enter a number.")
 
 # ---- category ----
 def get_category():
@@ -191,48 +211,50 @@ def get_description():
 def get_date():
     while True:
         print("Enter date:")
-        day = get_non_empty_input("Date: ")
-        month = get_non_empty_input("Month: ")
-        year = get_non_empty_input("Year: ")
+        day_text = get_non_empty_input("Date: ")
+        month_text = get_non_empty_input("Month: ")
+        year_text = get_non_empty_input("Year: ")
 
-        if not (day.isdigit() and month.isdigit() and year.isdigit()):
-            print("Date must be number!")
+        if not (day_text.isdigit() and month_text.isdigit() and year_text.isdigit()):
+            print("Date values must be numbers.")
             continue
+        
+        current_year = datetime.now().year
 
-        if not (2000 <= int(year) <= 2026):
-            print("Year must be between 2000 and 2026")
+        if not (2000 <= int(year_text) <= current_year):
+            print(f"Year must be between 2000 and {current_year}")
             continue
 
         try:
-            valid_date = datetime(int(year), int(month), int(day))
+            valid_date = datetime(int(year_text), int(month_text), int(day_text))
             date = valid_date.strftime("%Y-%m-%d")
             return date
-
         except ValueError:
-            print("Invalid date! Please enter a real calendar date.")
+            print("Invalid date. Please enter a real calendar date.")
 
-def get_non_empty_input(message):
+def get_non_empty_input(prompt_message):
     while True:
-        value = input(message).strip()
-        if value:
-            return value
+        user_input = input(prompt_message).strip()
+        if user_input:
+            return user_input
         print("Input cannot be empty.")
 
 def main():
     tracker = ExpenseTracker("expense.json")
 
     while True:
-        print("1. Add expenses.")
-        print("2. View expenses.")
-        print("3. View total spending.")
-        print("4. View spending by category.")
-        print("5. View highest expense and lowest expense.")
-        print("6. To remove expense.")
-        print("7. edit expense feature.")
-        print("8. monthly spending summary.")
-        print("q. Quit")
+        print("\nExpense Tracker Menu")
+        print("1. Add an expenses")
+        print("2. View all expenses")
+        print("3. View total spending")
+        print("4. View spending by category")
+        print("5. View highest and lowest expense")
+        print("6. Delete an expense")
+        print("7. Edit an expense")
+        print("8. View monthly spending summary")
+        print("Q. Quit")
 
-        choice = input(": ").lower()
+        choice = input("Select an option: ").strip().lower()
 
         match choice:
             case "1":
@@ -261,11 +283,11 @@ def main():
                 tracker.monthly_spending_summary()
             
             case "q" | "quit" | "exit":
-                print("Bye")
+                print("Goodbye!")
                 break
 
             case _:
-                print("Invalid choice")
+                print("Invalid choice. Please try again.")
 
 
 if "__main__" == __name__:
