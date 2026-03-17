@@ -4,7 +4,7 @@ from datetime import datetime
 
 class ExpenseTracker:
     def __init__(self, data_file_path):
-        self.file_name =  data_file_path
+        self.data_file_path =  data_file_path
         self.expenses = []
         self.load_expenses()
 
@@ -118,7 +118,7 @@ class ExpenseTracker:
 
         print("\nHighest Expense: ")
         print(
-            f"${highest_expense['amount']} - {highest_expense['category']} - {self.view_highest_expense['date']}"
+            f"${highest_expense['amount']} - {highest_expense['category']} - {highest_expense['date']}"
             )
 
     def view_lowest_expense(self):
@@ -270,8 +270,8 @@ def main():
                 tracker.view_spending_by_category()
             
             case "5":
-                tracker.view_highest_expense
-                tracker.view_lowest_expense
+                tracker.view_highest_expense()
+                tracker.view_lowest_expense()
             
             case "6":
                 tracker.delete_expense()
